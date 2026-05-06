@@ -34,8 +34,34 @@ OF SUCH DAMAGE.
 
 #include "gd32f10x.h"
 #include "systick.h"
+#ifdef USE_FREERTOS
+#include "FreeRTOS.h"
+#include "task.h"
+#endif
 
 static volatile uint32_t delay;
+
+static void delay_busy_wait_1ms(uint32_t count)
+{
+    uint32_t reload;
+
+    if (count == 0U) {
+        return;
+    }
+
+    reload = (SystemCoreClock / 1000U) - 1U;
+    SysTick->LOAD = reload;
+    SysTick->VAL = 0U;
+    SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_ENABLE_Msk;
+
+    while (count-- != 0U) {
+        while ((SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk) == 0U) {
+        }
+    }
+
+    SysTick->CTRL = 0U;
+    SysTick->VAL = 0U;
+}
 
 /*!
     \brief      configure systick
@@ -45,6 +71,7 @@ static volatile uint32_t delay;
 */
 void systick_config(void)
 {
+#ifndef USE_FREERTOS
     /* setup systick timer for 1000Hz interrupts */
     if (SysTick_Config(SystemCoreClock / 1000U)){
         /* capture error */
@@ -53,6 +80,7 @@ void systick_config(void)
     }
     /* configure the systick handler priority */
     NVIC_SetPriority(SysTick_IRQn, 0x00U);
+#endif
 }
 
 /*!
@@ -63,10 +91,21 @@ void systick_config(void)
 */
 void delay_1ms(uint32_t count)
 {
+#ifdef USE_FREERTOS
+    if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED) {
+        vTaskDelay(pdMS_TO_TICKS(count));
+        return;
+    }
+#endif
+
+    delay_busy_wait_1ms(count);
+
+#ifndef USE_FREERTOS
     delay = count;
 
     while(0U != delay){
     }
+#endif
 }
 
 /*!

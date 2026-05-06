@@ -12,6 +12,7 @@
 - ✅ 使用 GNU Arm Embedded Toolchain (arm-none-eabi-gcc)
 - ✅ CMake 构建系统，支持 Ninja 和 Make 生成器
 - ✅ 集成 CMSIS、GD32 标准外设库和板级支持文件
+- ✅ 集成 FreeRTOS 实时操作系统
 - ✅ 支持 Debug 和 Release 两种构建模式
 - ✅ 支持 J-Link 调试
 - ✅ 自动生成 HEX 和 BIN 文件
@@ -86,9 +87,11 @@ Template-GD32F10X-V1.0/
 │       └── launch.json   # 调试配置
 ├── Core/                 # 核心代码
 │   ├── Inc/              # 头文件
+│   │   ├── FreeRTOSConfig.h      # FreeRTOS 配置
 │   │   └── systick.h
 │   └── Src/              # 源文件
 │       ├── main.c        # 主程序入口
+│       ├── freertos.c    # FreeRTOS 初始化与任务创建
 │       ├── gd32f10x_it.c
 │       └── systick.c
 ├── Drivers/              # 驱动库
@@ -102,6 +105,9 @@ Template-GD32F10X-V1.0/
 ├── cmake/                # CMake 配置文件
 │   ├── gd32/             # GD32 子模块
 │   └── gcc-arm-none-eabi.cmake  # 工具链配置
+├── Middlewares/          # 中间件
+│   └── Third_Party/
+│       └── FreeRTOS/     # FreeRTOS Kernel 源码
 ├── examples/             # 官方示例代码
 ├── CMakeLists.txt        # CMake 主配置文件
 ├── CMakePresets.json     # CMake 预设配置
@@ -120,6 +126,18 @@ Template-GD32F10X-V1.0/
 - 程序入口使用 `Reset_Handler`
 
 如果你的实际 GD32F103 器件内存大小与此不同，需要根据芯片规格调整这个文件。
+
+---
+
+## ⏱️ FreeRTOS 支持说明
+
+本工程已集成 `FreeRTOS`，`Middlewares/Third_Party/FreeRTOS/` 通过 STM32CubeMX 生成
+
+- `Core/Src/freertos.c` 包含 RTOS 初始化函数 `FREERTOS_Init()`。
+- `Core/Inc/FreeRTOSConfig.h` 用于配置 FreeRTOS 内核参数，如任务堆栈、时钟节拍、调度选项等。
+- `Middlewares/Third_Party/FreeRTOS/` 包含 FreeRTOS 内核实现、CMSIS-RTOS2 适配层和 ARM_CM3 可移植层。
+- 默认构建会自动包含 FreeRTOS 内核，无需额外手动添加源文件。
+- `Core/Src/systick.c` 中的 `delay_1ms()` 在调度器启动后会自动切换为 `vTaskDelay()`，确保系统时钟节拍正确配置。
 
 ---
 
