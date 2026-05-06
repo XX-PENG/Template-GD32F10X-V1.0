@@ -1,6 +1,6 @@
 
-#include "FreeRTOS.h"
-#include "task.h"
+// #include "FreeRTOS.h"
+#include "cmsis_os2.h"
 #include "main.h"
 
 
@@ -16,11 +16,13 @@ static void GPIO_Init(void)
 int main(void)
 {
     GPIO_Init();
-    FREERTOS_Init();
 
-    vTaskStartScheduler();
+    osKernelInitialize();
+    FREERTOS_Init();
+    osKernelStart();
 
     while(1)
     {
+
     }
 }

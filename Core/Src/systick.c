@@ -35,8 +35,7 @@ OF SUCH DAMAGE.
 #include "gd32f10x.h"
 #include "systick.h"
 #ifdef USE_FREERTOS
-#include "FreeRTOS.h"
-#include "task.h"
+#include "cmsis_os2.h"
 #endif
 
 static volatile uint32_t delay;
@@ -92,8 +91,8 @@ void systick_config(void)
 void delay_1ms(uint32_t count)
 {
 #ifdef USE_FREERTOS
-    if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED) {
-        vTaskDelay(pdMS_TO_TICKS(count));
+    if ((count != 0U) && (osKernelGetState() == osKernelRunning)) {
+        (void)osDelay(count);
         return;
     }
 #endif
