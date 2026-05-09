@@ -4,7 +4,7 @@
         {
             "name": "Debug GD32 with J-Link",
             "cwd": "${workspaceFolder}",
-            "executable": "${workspaceFolder}/build/Debug/Template-GD32F10X-V1.0.elf",
+            "executable": "${command:cmake.launchTargetPath}",
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "jlink",
@@ -12,7 +12,8 @@
             "interface": "swd",
             "runToEntryPoint": "main",
             "svdFile": "${workspaceFolder}/jlink/GD32F10x_MD.svd",
-            "showDevDebugOutput": "both"
+            "showDevDebugOutput": "parsed",
+            "serverArgs": ["-speed", "4000"]
         }
     ]
 }
